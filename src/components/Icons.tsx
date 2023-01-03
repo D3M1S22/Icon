@@ -1,24 +1,24 @@
 import { IconDefinition, library } from "@fortawesome/fontawesome-svg-core";
+import React from "react";
+
 import {
   FontAwesomeIcon,
-  FontAwesomeIconProps
+  FontAwesomeIconProps,
 } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 
-declare interface IconProps {
+declare interface IconProps extends Omit<FontAwesomeIconProps, "icon"> {
   iconType?: string;
   icon?: string;
 }
 
-export default function Icons(
-  props: IconProps & Omit<FontAwesomeIconProps, "icon">
-) {
+export default function Icons(props: IconProps) {
   const [fetchedIcon, setFetchedIcon] = useState<IconDefinition>();
   const [fetched, setFetched] = useState(false);
-  // let a = {}
-  let finalProps = { ...props };
-  delete finalProps.iconType;
-  delete finalProps.icon;
+  let finalProps = {};
+  Object.entries(props).map(([key, val]) => {
+    if (key !== "iconType" && key !== "icon") finalProps[key] = val;
+  });
 
   import(
     /* webpackChunkName: "fonts/[request]" */
@@ -26,7 +26,7 @@ export default function Icons(
   )
     .then((response) => {
       setFetched(true);
-
+      console.log(response);
       if (response && response.definition) {
         setFetchedIcon(response.definition);
         library.add(response.definition);
