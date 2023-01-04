@@ -7,7 +7,9 @@ export default function App() {
   return (
     <div className="App">
       {/* <Icons iconType="solid" icon="faZap" size="xl" /> */}
-      <Card />
+      <div style={{ border: "2px solid red", height: "100vh", zIndex: -1 }}>
+        <Card />
+      </div>
     </div>
   );
 }
