@@ -3,7 +3,8 @@ import {
   animated,
   useSpring,
   useTransition,
-  Controller,
+  useIsomorphicLayoutEffect,
+  to,
 } from "@react-spring/web";
 
 declare interface CardProps {
@@ -24,43 +25,38 @@ export default function Card() {
       window.innerHeight / 2 -
       cardRef?.current?.getBoundingClientRect()?.height / 2,
   });
+  const [show, showApi] = useSpring(() => ({
+    from: { opacity: 0 },
+    config: {
+      duration: 400,
+    },
+  }));
 
+  useIsomorphicLayoutEffect(() => {
+    showApi.start({
+      from: { opacity: show.opacity },
+      to: { opacity: isOpen ? 1 : 0 },
+    });
+  }, [isOpen]);
   const [springs, api] = useSpring(() => ({
-    from: { x: 0, y: 0 },
+    from: { x: 0, y: 0, width: "75px", height: "75px" },
   }));
 
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
       setDimensions({
-        toX:
-          window.innerWidth / 2 -
-          cardRef?.current?.getBoundingClientRect().width / 2,
-        toY:
-          window.innerHeight / 2 -
-          cardRef?.current?.getBoundingClientRect().height / 2,
+        toX: window.innerWidth / 2 - 75 / 2,
+        toY: window.innerHeight / 2 - 75 / 2,
       });
       window.addEventListener("resize", handleResize);
       return; // 👈️ return early if initial render
     }
     function handleResize() {
-      console.log(
-        "width-window => " + window.innerWidth / 2,
-        "element-width => " + cardRef?.current?.getBoundingClientRect().width ??
-          1 / 2,
-        "sottrazione => " +
-          (window.innerWidth / 2 -
-            cardRef?.current?.getBoundingClientRect().width ?? 1 / 2)
-      );
       setDimensions({
-        toX:
-          window.innerWidth / 2 -
-          cardRef?.current?.getBoundingClientRect().width / 2,
-        toY:
-          window.innerHeight / 2 -
-          cardRef?.current?.getBoundingClientRect().height / 2,
+        toX: window.innerWidth / 2 - 150 / 2,
+        toY: window.innerHeight / 2 - 150 / 2,
       });
-      console.log("resizing");
     }
 
     return () => {
@@ -69,6 +65,13 @@ export default function Card() {
   }, [isOpen]);
 
   useEffect(() => {
+    // console.log(api.current);
+    isOpen
+      ? setDimensions({
+          toX: window.innerWidth / 2 - 150 / 2,
+          toY: window.innerHeight / 2 - 150 / 2,
+        })
+      : null;
     api.start({
       config: {
         duration: 350,
@@ -76,10 +79,14 @@ export default function Card() {
       from: {
         x: springs.x,
         y: springs.y,
+        width: springs.width,
+        height: springs.height,
       },
       to: {
         x: isOpen ? dimensions.toX : 0,
         y: isOpen ? dimensions.toY : 0,
+        width: isOpen ? "150px" : "75px",
+        height: isOpen ? "150px" : "75px",
       },
     });
   }, [isOpen, isOpen && dimensions]);
@@ -87,22 +94,44 @@ export default function Card() {
   const handleClick = () => setIsOpen(!isOpen);
 
   return (
-    <>
+    <div
+      style={
+        isOpen
+          ? {
+              position: "absolute",
+              width: "100vw",
+              height: "100vh",
+              backgroundColor: "rgba(255,255,255,0.2)",
+            }
+          : null
+      }
+    >
       <animated.div
         ref={cardRef}
         className="Card"
         onClick={() => {
           handleClick();
         }}
-        style={springs}
+        style={{ ...springs }}
       >
         <>
-          <animated.div className="CardTitle CardContent">TITOLO</animated.div>
-
-          <animated.div className="CardBody CardContent">CORPO</animated.div>
-          <animated.div className="CardFooter CardContent">FOOTER</animated.div>
+          <animated.div
+            className={"CardContent" + isOpen ? "CardTitle" : "CardLabel"}
+          >
+            {isOpen ? "TITOLO" : "LABEL"}
+          </animated.div>
+          {/* {isOpen && ( */}
+          <>
+            <animated.div className="CardBody CardContent" style={show}>
+              CORPO
+            </animated.div>
+            <animated.div className="CardFooter CardContent" style={show}>
+              FOOTER
+            </animated.div>
+          </>
+          {/* )} */}
         </>
       </animated.div>
-    </>
+    </div>
   );
 }

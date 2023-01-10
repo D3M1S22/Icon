@@ -13,11 +13,19 @@
   width: fit-content;
   border: 1px solid black;
   border-radius: 15%;
-  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 }
 
 .Card:hover {
   cursor: pointer;
+}
+
+.CardTitle {
+  position: absolute;
+  top: 0;
 }
 
 .CardContent {
